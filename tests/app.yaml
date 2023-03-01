@@ -250,3 +250,23 @@ bedtools:
         regex:  '9846'
         action: 'store_true'
 
+#-------------------------------------------------------------------
+# BioPerl Tests
+#-------------------------------------------------------------------
+bioperl:
+  summary: Basic bioperl test
+  schedule:
+    nodes: 1
+    tasks_per_node: 1
+  build:
+    source_path: bioperl.pl
+  run:
+    modules: ['gcc', 'bioperl']
+    cmds:
+      - '{{sched.test_cmd}} perl ./bioperl.pl'
+  result_parse:
+    regex:
+      result:
+        regex:  'aaaatgggggggggggccccgtt'
+        action: 'store_true'
+
