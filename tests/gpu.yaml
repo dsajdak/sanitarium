@@ -12,7 +12,7 @@ nvhpc:
     modules: ['nvhpc']
     source_path: vector_add.cu
     cmds:
-      - nvcc -gencode=arch=compute_61,code=sm_61 vector_add.cu -o vector_add
+      - nvcc -Xcompiler "-Xlinker -rpath=/opt/software/nvidia/lib64" vector_add.cu -o vector_add
   run:
     modules: ['nvhpc']
     cmds:
@@ -34,7 +34,7 @@ cuda:
     modules: ['cuda']
     source_path: vector_add.cu
     cmds:
-      - nvcc vector_add.cu -o vector_add
+      - nvcc -Xcompiler "-Xlinker -rpath=/opt/software/nvidia/lib64" vector_add.cu -o vector_add
   run:
     modules: ['cuda']
     cmds:
@@ -43,4 +43,43 @@ cuda:
     regex:
       result:
         regex:  'PASSED'
+        action: 'store_true'
+
+pytorch:
+  summary: Simple pytorch train/validate fashion mnist test
+  schedule:
+    nodes: 1
+    tasks_per_node: 1
+    slurm:
+      sbatch_extra: ['--gres=gpu:1']
+  build:
+    source_path: pytorch-test.tar.gz
+  run:
+    modules: ['foss', 'pytorch', 'torchvision']
+    cmds:
+      - '{{sched.test_cmd}} python fashion-mnist.py'
+      - '{{sched.test_cmd}} python fashion-mnist-validate.py'
+  result_parse:
+    regex:
+      result:
+        regex:  'Predicted: "Ankle boot", Actual: "Ankle boot"'
+        action: 'store_true'
+
+tensorflow:
+  summary: Simple tensorflow train/validate mnist test
+  schedule:
+    nodes: 1
+    tasks_per_node: 1
+    slurm:
+      sbatch_extra: ['--gres=gpu:1']
+  build:
+    source_path: tensorflow-mnist-test.py
+  run:
+    modules: ['foss', 'tensorflow']
+    cmds:
+      - '{{sched.test_cmd}} python tensorflow-mnist-test.py'
+  result_parse:
+    regex:
+      result:
+        regex:  '313/313.*accuracy: 0.9'
         action: 'store_true'
